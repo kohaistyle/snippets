@@ -1,0 +1,49 @@
+<?php
+
+function shortcode_kalle( $atts ) {
+    
+global $post;
+$product = wc_get_product( $post );
+//print_r( $product );
+
+
+if( !is_product() )
+	return;
+
+$tags = $product->get_tag_ids();
+$cats = $product->get_category_ids();
+
+//print_r($tags);
+//print_r($cats);
+
+$cats_array = array(); //$cats;
+$tags_array = $tags;
+
+$exclude_ids = array();
+$limit = 5;
+$product_id = $product->id;
+
+$data_store    = WC_Data_Store::load( 'product' );
+$related_posts = $data_store->get_related_products( $cats_array, $tags_array, $exclude_ids, $limit, $product_id );
+
+$html= "<ul class='kalle-related-list'>";
+foreach( $related_posts as $r){
+	$p = wc_get_product($r);
+	$l = get_permalink($r);
+    $d = $p->post_excerpt;
+	$current = "";
+
+	( $r == $product_id ) ? $current ="kalle-current" : $current = "" ;
+	$html .= "<hr class='kalle-related-hr'><a href='{$l}'><li class='kalle-related-item {$current}'>{$p->name}</li>";
+    if( $current !=""){
+        $html .= "<div class='kalle-desc'>{$d}</div>";
+    }
+    $html .= "</a>";	
+}
+$html .= "</ul>";
+
+return $html;
+//print_r( $related_posts );
+
+}
+add_shortcode( 'related_product', 'shortcode_kalle' );
